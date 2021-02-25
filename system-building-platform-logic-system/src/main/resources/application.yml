@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: dev
+  messages:
+    basename: static/i18n/messages
+swagger:
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: admin

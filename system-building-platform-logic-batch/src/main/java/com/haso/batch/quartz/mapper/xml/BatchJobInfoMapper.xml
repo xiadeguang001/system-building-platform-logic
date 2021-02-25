@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haso.batch.quartz.mapper.BatchJobInfoMapper">
+
+	<!-- 根据jobClassName查询 -->
+	<select id="searchBatchJobs" resultType="com.haso.batch.quartz.vo.BatchJobView">
+		select * from batch_job_info where 
+		delete_flg = '0'
+		<if test="view != null and view.searchString != null">
+		<bind name="ss" value="'%' + view.searchString + '%'"/>
+		and (job_name like #{ss} or job_handler like #{ss})
+		</if>
+		<if test="view.sortColumn != null and view.sortColumnOrder != null">
+			order by ${view.sortColumn} ${view.sortColumnOrder}
+		</if>
+	</select>
+	
+	<select id="searchBatchJobsNew" resultType="com.haso.batch.quartz.vo.BatchJobView">
+		select * from batch_job_info where 
+		delete_flg = '0'
+		<if test="view != null and view.searchString != null">
+		<bind name="ss" value="'%' + view.searchString + '%'"/>
+		and (job_name like #{ss} or job_handler like #{ss})
+		</if>
+		<if test="view.sortColumn != null and view.sortColumnOrder != null">
+			order by ${view.sortColumn} ${view.sortColumnOrder}
+		</if>
+	</select>
+	
+	<select id="countUsedTasks" resultType="integer">
+	select count(1) from batch_task_jobs where job_id = #{jobId} and delete_flg = '0'
+	</select>
+</mapper>

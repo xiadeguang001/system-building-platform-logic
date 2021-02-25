@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haso.system.module.demo.mapper.Demo2JobMapper">
+
+    <resultMap id="view4Demo" type="com.haso.system.module.demo.view.View4Demo2">
+        <result column="EMP_ID" property="empId" />
+        <result column="EMP_NAME" property="ename" />
+        <result column="BASIC_SALARY" property="basicSalary" />
+        <result column="GRADE_CODE" property="gradeCode" />
+        <result column="BONUS_MAGNIFICATION" property="bonusMagnification" />
+        <result column="FIXED_BONUS" property="fixedBonus" />
+    </resultMap>
+
+    <select id="findAll" resultMap="view4Demo">
+        <![CDATA[
+            SELECT
+                EMP.EMP_ID,
+                EMP.EMP_NAME,
+                EMP.BASIC_SALARY,
+                EMP.GRADE_CODE,
+                GRADE.BONUS_MAGNIFICATION,
+                GRADE.FIXED_BONUS
+        FROM
+            EMP
+            INNER JOIN GRADE
+                ON EMP.GRADE_CODE = GRADE.GRADE_CODE
+        ]]>
+    </select>
+</mapper>

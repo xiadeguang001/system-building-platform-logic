@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haso.batch.quartz.mapper.BatchTaskInfoMapper">
+
+	<select id="searchList" resultType="com.haso.batch.quartz.vo.BatchTaskView">
+		select * from (
+			select 
+			bti.id,
+			bti.task_name,
+			bti.cron_expression,
+			(
+			case 
+				when exists(
+					select 1 from batch_task_record btr 
+					where btr.delete_flg ='0' 
+					and btr.result = '0' 
+					and btr.task_id = bti.id
+					and btr.id = (select max(btr2.id) from batch_task_record btr2 where btr2.task_id = btr.task_id)
+					) then '1'
+				when qt.trigger_state in ('ACQUIRED', 'WAITING', 'BLOCKED') then '0'
+				when qt.trigger_state in ('PAUSED', 'PAUSED_BLOCKED') then '2'
+				when qt.trigger_state = 'ERROR' then '3'
+			end
+			) as task_execute_status,
+			bti.status,
+			bti.blocking_strategy,
+			bti.retry_times,
+			bti.notice_times,
+			bti.notice_emails,
+			bti.description,
+			(select max(start_time) from batch_task_record btr where btr.task_id = bti.id and btr.delete_flg = '0') as pre_run_time,
+			to_timestamp(qt.next_fire_time/1000) as next_run_time
+			from batch_task_info bti
+			left join qrtz_triggers qt
+			on qt.trigger_name = bti.task_name
+			where 
+			bti.delete_flg = '0'
+			<if test="view != null and view.searchString != null">
+			<bind name="ss" value="'%' + view.searchString + '%'"/>
+			and 
+			(
+				bti.task_name like #{ss} or bti.description like #{ss}
+				or exists (
+					select 1
+					from batch_task_jobs jobs
+					inner join batch_job_info job
+					on job.id = jobs.job_id
+					and job.delete_flg = '0'
+					where jobs.delete_flg = '0'
+					and jobs.task_id = bti.id
+					and (
+					job.job_name like #{ss} or job.job_handler like #{ss}
+					)
+				)
+			)
+			</if>
+		) tmp
+		<if test="view.sortColumn != null and view.sortColumnOrder != null">
+			order by ${view.sortColumn} ${view.sortColumnOrder}
+		</if>
+	</select>
+	
+	<select id="searchListNew" resultType="com.haso.batch.quartz.vo.BatchTaskView">
+		select * from (
+			select 
+			bti.id,
+			bti.task_name,
+			bti.cron_expression,
+			(
+			case 
+				when exists(
+					select 1 from batch_task_record btr 
+					where btr.delete_flg ='0' 
+					and btr.result = '0' 
+					and btr.task_id = bti.id
+					and btr.id = (select max(btr2.id) from batch_task_record btr2 where btr2.task_id = btr.task_id)
+					) then '1'
+				when qt.trigger_state in ('ACQUIRED', 'WAITING', 'BLOCKED') then '0'
+				when qt.trigger_state in ('PAUSED', 'PAUSED_BLOCKED') then '2'
+				when qt.trigger_state = 'ERROR' then '3'
+			end
+			) as task_execute_status,
+			bti.status,
+			bti.blocking_strategy,
+			bti.retry_times,
+			bti.notice_times,
+			bti.notice_emails,
+			bti.description,
+			(select max(start_time) from batch_task_record btr where btr.task_id = bti.id and btr.delete_flg = '0') as pre_run_time,
+			to_timestamp(qt.next_fire_time/1000) as next_run_time
+			from batch_task_info bti
+			left join qrtz_triggers qt
+			on qt.trigger_name = bti.task_name
+			where 
+			bti.delete_flg = '0'
+			<if test="view != null and view.searchString != null">
+			<bind name="ss" value="'%' + view.searchString + '%'"/>
+			and 
+			(
+				bti.task_name like #{ss} or bti.description like #{ss}
+				or exists (
+					select 1
+					from batch_task_jobs jobs
+					inner join batch_job_info job
+					on job.id = jobs.job_id
+					and job.delete_flg = '0'
+					where jobs.delete_flg = '0'
+					and jobs.task_id = bti.id
+					and (
+					job.job_name like #{ss} or job.job_handler like #{ss}
+					)
+				)
+			)
+			</if>
+		) tmp
+		<if test="view.sortColumn != null and view.sortColumnOrder != null">
+			order by ${view.sortColumn} ${view.sortColumnOrder}
+		</if>
+	</select>
+	
+	<select id="getAllTasks" resultType="com.haso.batch.quartz.vo.BatchTaskView">
+		select * from batch_task_info where 
+		delete_flg = '0'
+		order by id desc
+	</select>
+	
+	<update id="transferJobDetailToConcurrent">
+		update qrtz_job_details
+			set is_nonconcurrent = false
+		where
+			job_name = #{taskName}
+			and job_group = #{taskName}
+	</update>
+</mapper>

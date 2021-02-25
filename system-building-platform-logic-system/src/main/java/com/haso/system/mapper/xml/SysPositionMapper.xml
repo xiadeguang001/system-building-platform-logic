@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haso.system.mapper.SysPositionMapper">
+
+
+    <!--职位管理 编辑效验-->
+    <select id="editDuplicateCheck" parameterType="com.haso.system.model.DuplicateCheckVo" resultType="Long">
+        <if test="oldFieldVal != newFieldVal">
+        SELECT
+            COUNT(*)
+        FROM ${tableName}
+        WHERE
+            delete_flg='0'
+            AND
+            ${fieldName} != #{oldFieldVal}
+            AND
+            ${fieldName} = #{newFieldVal}
+        </if>
+    </select>
+
+    <!--职位管理 新建效验-->
+    <select id="addDuplicateCheck" parameterType="com.haso.system.model.DuplicateCheckVo" resultType="Long">
+    SELECT
+        COUNT(*)
+    FROM ${tableName}
+    WHERE
+        delete_flg='0'
+        AND
+        ${fieldName} = #{fieldVal}
+    </select>
+
+
+</mapper>

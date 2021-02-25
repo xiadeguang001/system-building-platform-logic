@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.haso.system.mapper.JobDetailMapper">
+
+    <update id="updatePrevFireTimeByCondition" >
+        update qrtz_triggers set prev_fire_time = #{prevFireTime}
+        where sched_name = #{schedName}
+        and trigger_name = #{jobName}
+        and trigger_group = #{jobGroup}
+    </update>
+
+</mapper>
